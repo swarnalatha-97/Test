@@ -1,0 +1,78 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/cde32a2f-fc78-4b73-9634-165d330f34f6/ # 
+title: emp_details
+description: This is a sample raml for employee details.
+version: 1.0
+
+/createEmployee:
+  post:
+    description: Adding employee details.
+    body:
+      application/json:
+        example: !include jsonEx.raml
+          
+    responses:
+        200:
+          description: Sucess Response
+          body:
+             application/json:
+              example: !include jsonSucessEx.raml
+                   
+        400:
+          description: Failure Response
+          body:
+            application/json:
+              example: !include jsonBadReqEx.raml
+
+/updateEmployee:
+  description: Updating information of the employees.
+  post:
+    body:
+      application/xml:
+        example: !include xmlEx.raml
+    responses:
+      200:
+        body:
+          application/xml:
+            example: !include xmlSucessEx.raml
+      400:
+        body:
+          application/xml:
+            example: !include xmlBadReqEx.raml            
+                         
+/fetchEmployee:
+  get:
+    description: Retrive employee information based on employee Id.
+    queryParameters:
+      empId:
+        displayName: empId
+        required: true
+        example: '12345'
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include jsonEx.raml
+      400:
+        body:
+          application/json:
+            example: !include jsonBadReqEx.raml
+              
+/deleteEmployee:
+    description: Delete information of the employees specified
+    get:
+      queryParameters:
+        empId:
+          displayName: empId
+          required: true
+          example: '12345'
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include jsonEx.raml
+        400:
+          body:
+            application/json:
+              example: !include jsonBadReqEx.raml
+                         

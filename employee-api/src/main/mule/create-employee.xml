@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="create-employeeFlow" doc:id="5436c67d-16b0-4e79-a88c-a6a91cf362d2" >
+		<logger level="INFO" doc:name="Start Flow " doc:id="20e120c9-0ca6-4685-9228-d14d11a21d20" message="Start Flow --- #[payload]"/>
+		<db:insert doc:name="Insert" doc:id="b6b4818f-1307-4b11-9a46-f88f75cf63ea" config-ref="Database_Config">
+			<db:sql ><![CDATA[INSERT INTO emp(empId, empName, empRole, empDomain) VALUES (:empId, :empName, :empRole, :empDomain)]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	empId : payload.id,
+	empName : payload.name,
+	empRole : payload.role,
+	empDomain : payload.domain	
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="0be15407-96f5-4ec8-a5b5-73a0edbfe609" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    code: 200,
+    message: "Success"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="End Flow " doc:id="ecbdf791-d080-4f65-832b-aafda0c2229f" message="End Flow"/>
+		<error-handler ref="global-error-handlerError_Handler" />
+	</flow>
+</mule>

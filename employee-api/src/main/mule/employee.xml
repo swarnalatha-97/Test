@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <apikit:config name="employee-config" api="employee.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="employee-main">
+        <http:listener config-ref="employee-httpListenerConfig" path="/emp/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.reasonPhrase]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <set-variable value="#[correlationId]" doc:name="Set UUID" doc:id="9baf3d14-3913-4dbe-877c-303130d01dbc" variableName="UUID" />
+        <apikit:router config-ref="employee-config" />
+		<error-handler ref="global-error-handlerError_Handler" />
+    </flow>
+    <flow name="employee-console">
+        <http:listener config-ref="employee-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="employee-config" />
+        <error-handler ref="global-error-handlerError_Handler" />
+    </flow>
+    <flow name="get:\fetchEmployee:employee-config">
+        <flow-ref doc:name="Flow Reference" doc:id="9a9f53ea-2b75-4653-bc3a-3cd0de4cf749" name="fetch-employeeFlow" />
+    </flow>
+    <flow name="post:\createEmployee:application\json:employee-config">
+        <flow-ref doc:name="Flow Reference" doc:id="0067b9ac-62bf-4084-838e-c5919e6deb17" name="create-employeeFlow" />
+    </flow>
+    <flow name="post:\updateEmployee:application\xml:employee-config">
+        <flow-ref doc:name="Flow Reference" doc:id="eecc22f3-c487-4e14-92f5-445743ff2d67" name="update-employeeFlow" />
+    </flow>
+    <flow name="get:\deleteEmployee:employee-config">
+		<flow-ref doc:name="Flow Reference" doc:id="bab1caf4-b589-40d7-a6d0-10796ece16cf" name="delete-employeeFlow"/>
+    </flow>
+</mule>

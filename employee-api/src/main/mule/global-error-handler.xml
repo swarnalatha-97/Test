@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="employee-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
+    </http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="03138e49-12ec-481c-8048-720676aa7440" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="root" database="employee" >
+		</db:my-sql-connection>
+	</db:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="9ef0c966-b663-49f2-91b1-1d2dab5411b4" file="dev.properties" />
+	<error-handler name="global-error-handlerError_Handler" doc:id="af7f79db-7eda-44b9-8b1f-25a77d23fb1b" >
+	<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a531af35-dac1-4118-9df5-185e1e742676" type="VALIDATION:INVALID_NUMBER">
+			<logger level="INFO" doc:name="        Start       VALIDATION:INVALID_NUMBER" doc:id="8381c5b2-2163-4227-b309-9010aa549d87" message="Start       VALIDATION:INVALID_NUMBER" />
+			<ee:transform doc:name="Transform Message" doc:id="e171ff23-cb44-429a-9f78-d661a90abe6d">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Status : 400,
+	Message : error.description
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="statusCode"><![CDATA[400]]></ee:set-variable>
+					<ee:set-variable variableName="reasonPhrase"><![CDATA["Bad Request"]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="03766498-0901-40b1-ab3f-02ffa5af5622" name="global-process-handler-sub_flow" />
+			<logger level="INFO" doc:name="        End       VALIDATION:INVALID_NUMBER" doc:id="e4633599-675a-421e-852b-9ca18488cfd0" message="End       VALIDATION:INVALID_NUMBER" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7caa224a-d9c0-4cc9-b92a-3bfbac9b2c62" type="EMP:EMPLOYEE_NOT_FOUND">
+			<logger level="INFO" doc:name="        Start       EMP:EMPLOYEE_NOT_FOUND" doc:id="2a8c0ab4-899d-4636-9a4c-c15a60b964a1" message="Start       EMP:EMPLOYEE_NOT_FOUND" />
+			<ee:transform doc:name="Transform Message" doc:id="38a733ec-0b99-4c6a-8e1d-85f46b633b52">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Status : 40010,
+	Message : "Employee Not Found"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="statusCode"><![CDATA[400]]></ee:set-variable>
+					<ee:set-variable variableName="reasonPhrase"><![CDATA["Emp Not Found"]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="fa0da31f-7177-4159-a419-2bc3c194be68" name="global-process-handler-sub_flow" />
+			<logger level="INFO" doc:name="        End       EMP:EMPLOYEE_NOT_FOUND" doc:id="557a947a-a73c-4e44-8afe-72f3dfbfa14b" message="End       EMP:EMPLOYEE_NOT_FOUND" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="3f9951b6-9b77-455e-84c6-b0ba3e0a6279" type="DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION">
+			<logger level="INFO" doc:name="       Start       DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION" doc:id="46f604cf-a46b-45e8-9186-d5be7684e9d4" message="Start       DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION" />
+			<ee:transform doc:name="Transform Message" doc:id="778a6f25-e483-437d-b2a1-61ffd2114861">
+				<ee:message>
+					<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	Status : 500,
+	Message : "Internal Server Error"
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables>
+					<ee:set-variable variableName="statusCode"><![CDATA[500]]></ee:set-variable>
+					<ee:set-variable variableName="reasonPhrase"><![CDATA["Server Error"]]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="bf8c085c-c219-44c6-ad10-04497f2c4c6c" name="global-process-handler-sub_flow" />
+			<logger level="INFO" doc:name="        End       DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION" doc:id="a2472911-3814-4b35-8c3a-da2dfbe23abd" message="End       DB:BAD_SQL_SYNTAX, DB:CONNECTIVITY, DB:QUERY_EXECUTION" />
+		</on-error-continue>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="e79387ce-8e0e-4524-953d-869d1d631e8a" type="APIKIT:BAD_REQUEST" >
+			<ee:transform doc:name="Transform Message" doc:id="20d4a264-d311-4ba5-8ae8-e776b46f0c45" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="4ac9a1fa-3526-4b67-a3bd-3f0998fb5ea5" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="733b9adf-48b4-4e08-b9a6-fb37144739fb" type="APIKIT:NOT_FOUND" >
+			<ee:transform doc:name="Transform Message" doc:id="db3d1f5e-3bf3-4997-8df5-848c92e11134" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="b0831b50-9055-4b2a-81d5-eb82d7af59c2" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d16d3a56-2f03-4a0e-93b0-2c618d970499" type="APIKIT:METHOD_NOT_ALLOWED" >
+			<ee:transform doc:name="Transform Message" doc:id="9ffb1f4d-3f0b-401d-9bfa-f3bb028e0bcf" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="1e575c88-0bec-4e8a-8ecb-12a232b551c5" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0abeab16-eb11-473a-a26d-2214644b48d9" type="APIKIT:NOT_ACCEPTABLE" >
+			<ee:transform doc:name="Transform Message" doc:id="baa90c8c-c6c5-42fe-a4d6-1f975b7a0306" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="5c9a3f18-4af1-40b9-974a-972482ab8524" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3edeaeb9-4d4c-4445-b112-8a806d74e423" type="APIKIT:UNSUPPORTED_MEDIA_TYPE" >
+			<ee:transform doc:name="Transform Message" doc:id="182fa1d4-beed-40b8-8476-f09cab90fc71" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="39c92e39-b0fa-47aa-b522-fd002c05bd41" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c3811082-c00e-4431-82c2-8d8284776d32" type="APIKIT:NOT_IMPLEMENTED" >
+			<ee:transform doc:name="Transform Message" doc:id="f0d54139-2aff-469d-984a-91759ad13208" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+				</ee:message>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="7d863a8a-97d2-4124-97f8-ef0e1088a358" name="global-process-handler-sub_flow" />
+		</on-error-propagate>
+		
+	</error-handler>
+	<sub-flow name="global-process-handler-sub_flow" doc:id="859d2386-cdb8-45ba-aad8-a36b84cb555e" >
+		<ee:transform doc:name="Transform Message" doc:id="24cae6e2-d7db-42ab-a4f4-a785da941653" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	'error' : {
+		'fromEnvironment' : p('mule_targer_env'),
+		'requestUuID' : vars.requestUUID,
+		'fromAppName' : vars.appName,
+		errorDetails: {
+			erroCode : vars.errorCode,
+			errorType : error.errorType.namespace as String ++ ':' ++ error.errorType.identifier as String,
+			errorDescription : error.description,
+			errorSource : "System Exception",
+			errorSeverity : "High"
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

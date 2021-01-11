@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<flow name="update-employeeFlow" doc:id="e602c8a0-b0a4-4235-a93d-027017a1ceb8" >
+		<logger level="INFO" doc:name="            Start            DB Delete" doc:id="92a8fd05-f116-4f62-b692-e94649988a59" message="Start --- DB Delete" />
+		<db:update doc:name="Update" doc:id="17c61b69-2194-40cd-8ba2-e5159a569310" config-ref="Database_Config">
+			<db:sql><![CDATA[UPDATE emp SET empDomain = :empDomain WHERE empId = :empId
+]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	empId : payload.employees.emp.id,
+	empDomain : payload.employees.emp.domain	
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="fa940d01-083c-4dcd-985d-4f2066967bea">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+    code: 200,
+    message: "Success"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="            End           DB Delete" doc:id="2959f9d0-a597-44f2-bc7f-54e316e12876" message="End --- DB Delete" />
+		<error-handler ref="global-error-handlerError_Handler" />
+	</flow>
+</mule>

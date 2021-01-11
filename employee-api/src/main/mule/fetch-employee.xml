@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="fetch-employeeFlow" doc:id="87b3362f-c182-4b8f-8f0c-1ddf32c7a0b9" >
+		<logger level="INFO" doc:name="            Start            DB Select" doc:id="61bab1db-05df-4077-b509-1eecf8ddca31" message="Start DB Select"/>
+		<validation:is-number doc:name="Is number" doc:id="6dc036c4-48d9-425b-8e96-e598d56b1770" value="#[attributes.queryParams.empId]" numberType="INTEGER" message="empId should be a Number"/>
+		<db:select doc:name="Select" doc:id="08d15792-bfab-44ae-9928-ab1ea404c439" config-ref="Database_Config">
+			<db:sql><![CDATA[SELECT DISTINCT empId,empName,empRole,empDomain FROM emp WHERE empId = :empId]]></db:sql>
+			<db:input-parameters><![CDATA[#[{
+	empId: attributes.queryParams.empId as Number
+}]]]></db:input-parameters>
+		</db:select>
+		<choice doc:name="Choice" doc:id="6b626498-9d8e-492b-adfd-dac8f91360c2" >
+			<when expression="#[payload != null]">
+				<ee:transform doc:name="Transform Message" doc:id="58db5a9a-06a2-45d6-a7f7-4868eb8bc17b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<raise-error doc:name="Raise error" doc:id="f8517dd1-3fee-4afa-be1d-1d0f5f113167" type="EMP:EMPLOYEE_NOT_FOUND"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="            End           DB Select" doc:id="5140a23b-e3bf-4116-b291-102ab6e6154e" message="End DB Select"/>
+		<error-handler ref="global-error-handlerError_Handler" />
+	</flow>
+</mule>

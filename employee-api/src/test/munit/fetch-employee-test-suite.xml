@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="fetch-employee-test-suite.xml" />
+	<munit:test name="fetchemployeeFlowTest" doc:id="3361cb30-962f-4730-b3b6-0e30d9ee5846" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="aba3eb5b-3629-4f22-8716-c5d4ccce6bda" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="08d15792-bfab-44ae-9928-ab1ea404c439" attributeName="doc:id" />
+				</munit-tools:with-attributes>				
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[MunitTools::getResourceAsString('input.json')]" mediaType="application/json" />
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="b451208b-bcaf-4f70-b2d6-e6debd0f18bc" >
+				<munit:attributes value="#[queryParams:{'empId':'758504'}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to fetch-employeeFlow" doc:id="65f774d6-7cb0-4c1c-975d-c8f4acd50468" name="fetch-employeeFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="dcd675e9-f930-4792-a22e-cd33f2caa014" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+		
+	</munit:test>
+	<munit:test name="validationError" doc:id="1cd238eb-395a-46cd-af0c-99ed59afcc9e" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a75c9248-90eb-44f8-be32-79868d9cbcc4" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="08d15792-bfab-44ae-9928-ab1ea404c439" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="VALIDATION:INVALID_NUMBER" />
+				</munit-tools:then-return>
+			
+</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="32c473b5-7b10-4a72-9d62-38de47b05b8f" >
+				<munit:attributes value="#[queryParams:{'empId':'758sdj'}]" />
+
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to fetch-employeeFlow" doc:id="6ebfe3f5-6698-4901-9ac7-af742105decb" name="fetch-employeeFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="bca3cde0-2d4b-40e1-b3f8-d3a3d07155eb" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test>
+	
+	<!-- <munit:test name="empNotFoundError" doc:id="c61e16ad-3589-428b-9e11-ac394f138a35" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="dcf35de1-5d96-407e-af21-833b6cb68c7a" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="08d15792-bfab-44ae-9928-ab1ea404c439" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:error typeId="EMP:EMPLOYEE_NOT_FOUND" />
+				</munit-tools:then-return>
+			
+		</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="336289d7-7241-4520-8e88-771a917ffaef">
+				<munit:attributes value="#[queryParams:{'empId':'758508'}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to fetch-employeeFlow" doc:id="56e31e0c-eb54-4982-a5de-2d5f54bb08f5" name="fetch-employeeFlow"/>
+		
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="d36bddd7-102a-47c3-a806-e58afab7f937" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+	</munit:test> -->
+	
+<munit:test name="choiceCase" doc:id="11a81679-2034-4ab2-9262-b2138b105836" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="c7e411e4-dbb7-4d46-b3a5-cb762580781d" processor="db:select">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Select" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="08d15792-bfab-44ae-9928-ab1ea404c439" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="a20b71e2-9c06-45f6-b4e0-92631888f089" >
+				<munit:attributes value="#[queryParams:{'empId':'758504'}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to fetch-employeeFlow" doc:id="4c33c85d-26ed-4519-a9b9-b232d002c3c8" name="fetch-employeeFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="7cf30c8b-4207-4b82-b55a-e4c4f18c8b47" is="#[MunitTools::notNullValue()]" expression="#[payload]"/>
+		</munit:validation>
+		
+	</munit:test>
+	
+</mule>

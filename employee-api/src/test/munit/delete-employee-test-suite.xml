@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="delete-employee-test-suite.xml" />
+	<munit:test name="delete-employee-test-suite-delete-employeeFlowTest" doc:id="29184851-f272-4c3a-a33c-5d90775b3bfd" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="bf5da616-c674-46f0-a861-ebc166398eaa" processor="db:delete">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="Delete" attributeName="doc:name" />
+					<munit-tools:with-attribute whereValue="75956f18-bd17-4df9-890b-fd03a30c77c3" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="1a3a474e-0a61-4f51-8ba8-67cc135a3acc" >
+				<munit:payload value="#[queryParams:{'empId':'758504'}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to delete-employeeFlow" doc:id="b3760df2-079c-4cfc-9e76-813848b8ff67" name="delete-employeeFlow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-that doc:name="Assert that" doc:id="2bcc95d4-a070-43cb-8da4-6da5b1990dac" expression="#[payload]" is="#[MunitTools::notNullValue()]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:validation="http://www.mulesoft.org/schema/mule/validation"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="delete-employeeFlow" doc:id="6c240c11-1c66-4469-90b3-9e820164c9c2" >
+		<logger level="INFO" doc:name="            Start            DB Delete" doc:id="7c54f267-132b-4f94-be60-9be3a3f82f27" message="Start --- DB Delete"/>
+		<db:delete doc:name="Delete" doc:id="75956f18-bd17-4df9-890b-fd03a30c77c3" config-ref="Database_Config">
+			<db:sql ><![CDATA[DELETE FROM emp WHERE empId = :empId]]></db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	empId: attributes.queryParams.empId as Number
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="37671f20-49a9-42bd-8c95-a21885dfdcd3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+    code: 200,
+    message: "Success"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="            End           DB Delete" doc:id="38ac4f2b-cd98-4aa7-985d-584a3d8ac39c" message="End --- DB Delete"/>
+		<error-handler ref="global-error-handlerError_Handler" />
+	</flow>
+</mule>
